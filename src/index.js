@@ -12,5 +12,5 @@ mongoose.connect("mongodb+srv://palsubodh:Palsubodh@cluster0.mhegah9.mongodb.net
 app.listen(3000,function(){
     console.log("Port is running on 3000 ")
 })
-console.log("hi")
+
 app.use("/",route)
