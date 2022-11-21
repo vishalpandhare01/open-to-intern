@@ -1,80 +1,75 @@
-const internModel = require("../Models/internModel");
-const collegeModel = require("../Models/collegeModel");
+//=====================Importing Module and Packages=====================//
+const internModel = require("../Model/internModel");
+const collegeModel = require("../Model/collegeModel");
 const {
   valid,
   regForName,
   regForFullName,
   regForEmail,
   regForMobileNo,
-} = require("../Validator/validation");
+} = require("../Validation/validation");
 
+//===================== This function is used for Creating an Intern =====================//
 const createIntern = async function (req, res) {
   try {
-    let data = req.body;
-    let { name, email, mobile, fullName } = data;
-
-    if (!(name && email && mobile && fullName)) {
-      return res
-        .status(400)
-        .send({ status: false, msg: "All Fields are Mandatory." });
+    let data = req.body
+    let { name, email, mobile, collegeName } = data;
+    if (!(name)) {
+      return res.status(400).send({ status: false, msg: "Please Provide name" });
     }
-
+    if (!(email)) {
+      return res.status(400).send({ status: false, msg: "Please Provide email" });
+    }
+    if (!(mobile)) {
+      return res.status(400).send({ status: false, msg: "Please Provide mobile" });
+    }
+    if (!(collegeName)) {
+      return res.status(400).send({ status: false, msg: "Please Provide collegeName" });
+    }
     if (!valid(name))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Provide a valid Name." });
+      return res.status(400).send({ status: false, msg: "Provide a valid Name." });
     if (!regForFullName(name))
-      return res
-        .status(400)
-        .send({
-          status: false,
-          msg: "Invalid Name or Each Word's First letter Should be in Uppercase.",
-        });
+      return res.status(400).send({status: false,msg: "Invalid Name or Each Word's First letter Should be in Uppercase.",});
 
+    //===================== Validation of Email and Checking Duplicate Value =====================//
     if (!valid(email))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Provide a valid Email." });
-
+      return res.status(400).send({ status: false, msg: "Provide a valid Email." });
     if (!regForEmail(email))
       return res.status(400).send({ status: false, msg: "Invalid Email." });
-
     let checkDuplicate = await internModel.findOne({ email: email });
     if (checkDuplicate) {
-      return res
-        .status(400)
-        .send({ status: false, msg: "Email Already Exist." });
+      return res.status(400).send({ status: false, msg: "Email Already Exist." });
     }
 
+    //===================== Validation of Mobile Number and Checking Duplicate Value =====================//
     if (!valid(mobile))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Provide a valid Mobile Number." });
+      return res.status(400).send({ status: false, msg: "Provide a valid Mobile Number." });
     if (!regForMobileNo(mobile))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Invalid Mobile Number." });
+      return res.status(400).send({ status: false, msg: "Invalid Mobile Number." });
     let duplicateMobile = await internModel.findOne({ mobile: mobile });
     if (duplicateMobile) {
-      return res
-        .status(400)
-        .send({ status: false, msg: "Mobile Number Already Exist." });
+      return res.status(400).send({ status: false, msg: "Mobile Number Already Exist." });
     }
 
-    if (!valid(fullName))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Provide a valid fullName." });
-    //if (!regForName(fullName)) return res.status(400).send({ status: false, msg: "Invalid fullName." })
+    //===================== Validation of CollegeName =====================//
+    //data.collegeName = collegeName.toLowerCase();
+    if (!valid(collegeName))
+      return res.status(400).send({ status: false, msg: "Provide a valid College Name." });
+    // if (!regForName(collegeName))
+    //   return res.status(400).send({ status: false, msg: "Invalid College Name." });
 
-    let getCollegeId = await collegeModel.findOne({ fullName: data.fullName });
+    //===================== Fetching College Data from DB =====================//
+    let getCollegeId = await collegeModel.findOne({ fullName: data.collegeName });
     if (!getCollegeId) {
       return res
         .status(400)
-        .send({ status: false, msg: `Your ${data.fullName} is not Exist.` });
+        .send({ status: false, msg: `Your ${data.collegeName} is not Exist.` });
     }
 
+    //===================== Creating CollegeId inside Body with Key and Value =====================//
     data.collegeId = getCollegeId["_id"];
+    
+    //===================== Creating Intern Data in DB =====================//
     let internData = await internModel.create(data);
 
     let obj = {
@@ -96,34 +91,5 @@ const createIntern = async function (req, res) {
   }
 };
 
-const collegeDetails = async function (req, res) {
-  try {
-    const CollegeName = req.query.collegeName;
-    if (!CollegeName)
-    {
-      return res
-        .status(404)
-        .send({ status: false, msg: "CollegeName is required" });}
-
-    const collageData = await collegeModel
-      .find({ fullName: CollegeName }).select({_id:1})
-    if(collageData.length==0) return res.status(404).send({status:false,msg:"No data found"})
-    //console.log(collageData);
-
-    let findintern= await internModel.find({collegeId:collageData}).select({_id:1,name:1,mobile:1,email:1})
-    console.log(findintern)
-    let findCollege = await collegeModel.find({fullName:CollegeName}).select({_id:0,name:1,fullName:1,logoLink:1})
-    //console.log(findCollege)
-    const obj={
-        name:findCollege[0].name,
-        fullName:findCollege[0].fullName,
-        logoLink:findCollege[0].logoLink,
-        interns:findintern
-    }
-    res.status(200).send({ status: true, data:obj });
-  } catch (err) {
-    res.status(500).send({ status: false, msg: err.message });
-  }
-};
-
-module.exports = { createIntern, collegeDetails };
+//=====================Module Export=====================//
+module.exports = createIntern;

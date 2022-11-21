@@ -1,47 +1,123 @@
-const CollegeModel = require("../Models/collegeModel")
+//=====================Importing Module and Packages=====================//
+const collegeModel = require("../Model/collegeModel");
+const internModel = require("../Model/internModel");
+const {
+  valid,
+  regForName,
+  regForFullName,
+  regForLink,
+  regForExtension,
+} = require("../Validation/validation");
 
-
-const Validation = function (value) {
-    
-    if (typeof value == "number" || typeof value == "undefined" || typeof value == null) { return false }
-    if (typeof value == "string" && value.trim().length == 0) { return false }
-    return true
-}
-
-
+//===================== This function is used for Creating a College Data =====================//
 const createCollege = async function (req, res) {
+  try {
+    let data = req.body;
 
+    //===================== Destructing Data =====================//
+    let { name, fullName, logoLink } = data;
 
-    try {
-        let Data = req.body;
-
-        const { name, fullName, logoLink } = Data;
-
-        if (Object.keys(Data) == 0) return res.status(400).send({ status: false, msg: "Bad request/Plase provied data" });
-
-        if (!Validation(name)) { return res.status(400).send({status: false, msg:"name is require/fill tha name"}) }
-
-        let nameUnique = await CollegeModel.findOne({name:name})
-
-        if(nameUnique){return res.status(400).send({status: false, msg: "college already exist in DataBase"})}
-
-        if (!Validation(fullName)) { return res.status(400).send({status:false, msg: "Full name is require/fill the full name"}) }
-
-        let fullNameUnique  = await CollegeModel.findOne({fullName:fullName})
-
-        if(fullNameUnique){return res.status(400).send({status: false, msg: "college already exist in DataBase"})}
-
-        if (!Validation(logoLink)) { return res.status(400).send({status:false, msg:"logoLink is require/provied the logoLink"}) }
-
-        Data.name = name.toLowerCase()
-
-        const addCollege = await CollegeModel.create(Data);
-        return res.status(201).send({ status: true, msg: "college create successfully" , addCollege })
+    //===================== Checking the Mandatory Field =====================//
+    if (!(name)) {
+      return res.status(400).send({ status: false, msg: "Please provide name" });
     }
-    catch (error) {
-        console.log(error)
-        return res.status(500).send({ msg: error.message })
-    }
-}
 
-module.exports.createCollege = createCollege
+    if (!(fullName)) {
+      return res.status(400).send({ status: false, msg: "Please provide fullName" });
+    }
+    if (!(logoLink)) {
+      return res.status(400).send({ status: false, msg: "Please provide logoLink" });
+    }
+  
+    if (!valid(name))
+      return res.status(400).send({ status: false, msg: "Provide a valid Name" });
+    if (!regForName(name))
+      return res.status(400).send({ status: false, msg: "Invalid Name" });
+
+    data.name = name.toLowerCase();
+
+    //===================== Checking the Duplicate Value for Unique =====================//
+    let checkDuplicate = await collegeModel.findOne({ name: data.name });
+    if (checkDuplicate) {
+      return res.status(400).send({
+        status: false,
+        msg: `The ${data.name} is already exist. Please provide another College Name.`,
+      });
+    }
+
+    if (!valid(fullName))
+      return res.status(400).send({ status: false, msg: "Provide a valid fullName" });
+    if (!regForFullName(fullName))
+      return res.status(400).send({status: false,
+        msg: "Invalid fullName or Each Word's First letter Should be in Uppercase.",
+      });
+
+    //=====================Validation of Logo Link=====================//
+    if (!valid(logoLink))
+      return res.status(400).send({ status: false, msg: "Provide a valid logoLink" });
+    if (!regForLink(logoLink))
+      return res.status(400).send({ status: false, msg: "Invalid Link" });
+    if (!regForExtension(logoLink))
+      return res.status(400).send({ status: false, msg: "Invalid Extension Format in logoLink." });
+
+    //===================== Creating College Data in DB =====================//
+    let collegeData = await collegeModel.create(data);
+
+    let obj = {
+      name: collegeData.name,
+      fullName: collegeData.fullName,
+      logoLink: collegeData.logoLink,
+      isDeleted: collegeData.isDeleted,
+    };
+    res.status(201).send({status: true,
+      msg: `${data.name} College Data Created Successfully.`,
+      data: obj,
+    });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+//===================== This function is used for Get College Data =====================//
+
+
+
+
+
+
+const getCollegeData = async function (req, res) {
+  try {
+    let collegeName = req.query.collegeName;
+    if (Object.keys(req.query).length == 0) {
+      return res.status(400).send({ status: false, msg: "CollegeName is Mandatory" });
+    }
+    if (!collegeName) {
+      return res.status(400).send({ status: false, msg: "Please Enter your CollegeName" });
+    }
+    let getCollegeName = await collegeModel
+      .findOne({ fullName: collegeName})
+      .select({ name: 1, fullName: 1, logoLink: 1 });
+     // console.log(getCollegeName)
+    if (!getCollegeName) {
+      return res.status(404).send({ status: false, msg: `${collegeName} not Found.` });
+    }
+    let getinternName = await internModel
+      .find({ collegeId: getCollegeName["_id"] })
+      .select({ name: 1, email: 1, mobile: 1 });
+      console.log(getinternName)
+    let obj = {};
+    obj.name = getCollegeName.name;
+    obj.fullName = getCollegeName.fullName;
+    obj.logoLink = getCollegeName.logoLink;
+    obj.interns = getinternName;
+    if (getinternName.length == 0) {
+      return res.status(404).send({data: obj,interns: `Intern is not available at this ${collegeName}.`,});
+    }
+    res.status(200).send({ status: true, data: obj });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+//=====================Module Export=====================//
+module.exports = { createCollege, getCollegeData };

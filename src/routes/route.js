@@ -1,18 +1,22 @@
-const express=require('express')
-const router = express.Router()
-const college = require("../Controller/collegeController")
-const internControl = require('../Controller/internController')
-
-
-router.post("/functionup/colleges",college.createCollege)
-router.post("/functionup/interns",internControl.createIntern)
-router.get("/functionup/collegeDetails",internControl.collegeDetails)
-
-
-router.all("/*" ,  function(req,res){
-    res.status(404).send({msg:"provied validPath"})
-})
+//=====================Importing Module and Packages=====================//
+const express = require('express');
+const router = express.Router();
+const { createCollege, getCollegeData } = require("../Controller/collegeController")
+const createIntern = require("../Controller/internController")
 
 
 
-module.exports=router
+//=====================Create College Data(Post API)=====================//
+router.post("/functionup/colleges", createCollege)
+
+//=====================Create Intern Data(Post API)=====================//
+router.post("/functionup/interns", createIntern)
+
+//=====================Create Intern Data(Post API)=====================//
+router.get("/functionup/collegeDetails", getCollegeData)
+
+
+
+
+//=====================Module Export=====================//
+module.exports = router;   
