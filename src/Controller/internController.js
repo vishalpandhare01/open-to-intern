@@ -3,8 +3,6 @@ const internModel = require("../Model/internModel");
 const collegeModel = require("../Model/collegeModel");
 const {
   valid,
-  regForName,
-  regForFullName,
   regForEmail,
   regForMobileNo,
 } = require("../Validation/validation");
@@ -28,8 +26,7 @@ const createIntern = async function (req, res) {
     }
     if (!valid(name))
       return res.status(400).send({ status: false, msg: "Provide a valid Name." });
-    if (!regForFullName(name))
-      return res.status(400).send({status: false,msg: "Invalid Name or Each Word's First letter Should be in Uppercase.",});
+   
 
     //===================== Validation of Email and Checking Duplicate Value =====================//
     if (!valid(email))
@@ -52,11 +49,9 @@ const createIntern = async function (req, res) {
     }
 
     //===================== Validation of CollegeName =====================//
-    //data.collegeName = collegeName.toLowerCase();
+    data.collegeName = collegeName.toLowerCase();
     if (!valid(collegeName))
       return res.status(400).send({ status: false, msg: "Provide a valid College Name." });
-    // if (!regForName(collegeName))
-    //   return res.status(400).send({ status: false, msg: "Invalid College Name." });
 
     //===================== Fetching College Data from DB =====================//
     let getCollegeId = await collegeModel.findOne({ fullName: data.collegeName });
@@ -73,19 +68,14 @@ const createIntern = async function (req, res) {
     let internData = await internModel.create(data);
 
     let obj = {
-      isDeleted: internData.isDeleted,
+     
       name: internData.name,
       email: internData.email,
       mobile: internData.mobile,
       collegeId: internData.collegeId,
-    };
-    res
-      .status(201)
-      .send({
-        status: true,
-        msg: `${name}'s Intern Data Created Sucessfully.`,
-        data: obj,
-      });
+      isDeleted: internData.isDeleted,
+    }
+    res.status(201).send({status: true,msg: `${name}'s Intern Data Created Sucessfully.`,data: obj});
   } catch (error) {
     return res.status(500).send({ error: error.message });
   }

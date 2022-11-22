@@ -4,7 +4,6 @@ const internModel = require("../Model/internModel");
 const {
   valid,
   regForName,
-  regForFullName,
   regForLink,
   regForExtension,
 } = require("../Validation/validation");
@@ -44,13 +43,20 @@ const createCollege = async function (req, res) {
         msg: `The ${data.name} is already exist. Please provide another College Name.`,
       });
     }
+    data.fullName= fullName.toLowerCase()
+    let FullNamecheckDuplicate = await collegeModel.findOne({ fullName: data.fullName });
+    if (FullNamecheckDuplicate) {
+        return res.status(400).send({
+          status: false,
+          msg: `The ${data.fullName} is already exist. Please provide another College Name.`,
+        });
+      }
+      console.log(FullNamecheckDuplicate)
+      
 
     if (!valid(fullName))
       return res.status(400).send({ status: false, msg: "Provide a valid fullName" });
-    if (!regForFullName(fullName))
-      return res.status(400).send({status: false,
-        msg: "Invalid fullName or Each Word's First letter Should be in Uppercase.",
-      });
+   
 
     //=====================Validation of Logo Link=====================//
     if (!valid(logoLink))
@@ -61,6 +67,7 @@ const createCollege = async function (req, res) {
       return res.status(400).send({ status: false, msg: "Invalid Extension Format in logoLink." });
 
     //===================== Creating College Data in DB =====================//
+    
     let collegeData = await collegeModel.create(data);
 
     let obj = {
@@ -95,16 +102,14 @@ const getCollegeData = async function (req, res) {
       return res.status(400).send({ status: false, msg: "Please Enter your CollegeName" });
     }
     let getCollegeName = await collegeModel
-      .findOne({ fullName: collegeName})
-      .select({ name: 1, fullName: 1, logoLink: 1 });
-     // console.log(getCollegeName)
+      .findOne({ fullName: collegeName.toLowerCase()})
     if (!getCollegeName) {
       return res.status(404).send({ status: false, msg: `${collegeName} not Found.` });
     }
     let getinternName = await internModel
       .find({ collegeId: getCollegeName["_id"] })
       .select({ name: 1, email: 1, mobile: 1 });
-      console.log(getinternName)
+      //console.log(getinternName)
     let obj = {};
     obj.name = getCollegeName.name;
     obj.fullName = getCollegeName.fullName;
