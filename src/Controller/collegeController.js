@@ -90,8 +90,6 @@ const createCollege = async function (req, res) {
 
 
 
-
-
 const getCollegeData = async function (req, res) {
   try {
     let collegeName = req.query.collegeName;
@@ -102,7 +100,7 @@ const getCollegeData = async function (req, res) {
       return res.status(400).send({ status: false, msg: "Please Enter your CollegeName" });
     }
     let getCollegeName = await collegeModel
-      .findOne({ fullName: collegeName.toLowerCase()})
+      .findOne({$or:[{ fullName: collegeName.toLowerCase()},{ name:collegeName.toLowerCase()}]})
     if (!getCollegeName) {
       return res.status(404).send({ status: false, msg: `${collegeName} not Found.` });
     }

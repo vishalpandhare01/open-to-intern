@@ -54,7 +54,7 @@ const createIntern = async function (req, res) {
       return res.status(400).send({ status: false, msg: "Provide a valid College Name." });
 
     //===================== Fetching College Data from DB =====================//
-    let getCollegeId = await collegeModel.findOne({ fullName: data.collegeName });
+    let getCollegeId = await collegeModel.findOne({$or:[{ fullName: data.collegeName.toLowerCase()} , {name:data.collegeName.toLowerCase()}]});
     if (!getCollegeId) {
       return res
         .status(400)
