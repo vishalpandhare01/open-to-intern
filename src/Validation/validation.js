@@ -40,7 +40,7 @@ const regForMobileNo = function (value) {
   return /^((\+91)?|91)?[789][0-9]{9}$/.test(value);
 };
 
-//=====================Module Export=====================//
+//===================== Module Export =====================//
 module.exports = {
   valid,
   regForName,

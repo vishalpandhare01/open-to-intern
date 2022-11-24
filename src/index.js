@@ -8,8 +8,7 @@ app.use(express.json());
 
 mongoose
   .connect(
-    "mongodb+srv://palsubodh:Palsubodh@cluster0.mhegah9.mongodb.net/Intern",
-    {
+    "mongodb+srv://vishal0102:vishal0102@cluster0.9uryho2.mongodb.net/intern",{
       useNewUrlParser: true,
     }
   )

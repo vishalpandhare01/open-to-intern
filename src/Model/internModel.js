@@ -1,9 +1,9 @@
-//=====================Importing Module and Packages=====================//
+//===================== Importing Module and Packages =====================//
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId
 
 
-//=====================Creating Intern Schema=====================//
+//===================== Creating Intern Schema =====================//
 const internModel = new mongoose.Schema(
     {
         name: { type: String, require: true, trim: true },
@@ -15,5 +15,5 @@ const internModel = new mongoose.Schema(
     }, { timestamps: true })
 
 
-//=====================Module Export=====================//
+//===================== Module Export =====================//
 module.exports = mongoose.model('InternData', internModel)
