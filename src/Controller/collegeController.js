@@ -1,4 +1,4 @@
-//=====================Importing Module and Packages=====================//
+//===================== Importing Module and Packages =====================//
 const collegeModel = require("../Model/collegeModel");
 const internModel = require("../Model/internModel");
 const {
@@ -107,7 +107,7 @@ const getCollegeData = async function (req, res) {
     let getinternName = await internModel
       .find({ collegeId: getCollegeName["_id"] })
       .select({ name: 1, email: 1, mobile: 1 });
-      //console.log(getinternName)
+      
     let obj = {};
     obj.name = getCollegeName.name;
     obj.fullName = getCollegeName.fullName;
